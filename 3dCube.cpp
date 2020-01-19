@@ -14,7 +14,7 @@ struct vec3d
 
 struct triangle
 {
-    vec3d p[3] = { 0 };
+    vec3d p[3];
 };
 
 struct mesh
