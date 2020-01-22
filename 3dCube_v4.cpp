@@ -45,6 +45,7 @@ ostream& operator<<(ostream& os, const vec3d& dt)
 struct triangle
 {
     vec3d p[3] = {0};
+    int dp = 0;
     triangle()
     {
         p[0] = vec3d();
@@ -67,7 +68,7 @@ struct triangle
         p[0] = vec3d(_x0, _y0, _z0);
         p[1] = vec3d(_x1, _y1, _z1);
         p[2] = vec3d(_x2, _y2, _z2);
-        int dp = 1;
+        int dp = 0;
     }
     friend ostream& operator<<(ostream& os, const triangle& dt);
 };
@@ -148,7 +149,7 @@ private:
     mesh meshCube;
     mat4x4 matProj;
     vec3d vCamera = {0, 0, 0};
-    vec3d translator = {0, 0, 10};
+    vec3d translator = {0, 0, 5};
     mat4x4 matRotZ, matRotY, matRotX;
     triangle triProjected, triTranslated, triRotatedZ, triRotatedZX;
 
@@ -249,7 +250,7 @@ private:
 public:
     bool OnUserCreate() override
     {
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d());
+        //meshCube.tris = cubeMaker(meshCube.tris, vec3d());
 
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,0,0));
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(-1,0,0));
@@ -275,6 +276,8 @@ public:
         matRotX = matrixRotationX(fTheta * bias);
         matRotY = matrixRotationY(fTheta);
         matRotZ = matrixRotationZ(fTheta);
+
+        vector<triangle> vecTriToRaster;
 
         for (auto tri : meshCube.tris)
         {
@@ -306,29 +309,50 @@ public:
 
                 for (int i = 0; i < 3; i++)
                 {
-                    cout<<triTranslated.p[i]<<" : "<<endl;
                     triProjected.p[i] = triTranslated.p[i] * matProj;
                     if (triProjected.p[i].w != 0)
                     {
                         triProjected.p[i] = triProjected.p[i] / triProjected.p[i].w;
                     }
                     triProjected.p[i] = triProjected.p[i] + vec3d(1.0f, 1.0f, 0.0f);
+                    triProjected.dp = dp;
 
                     triProjected.p[i].x *= 0.5f * (float)ScreenWidth();
                     triProjected.p[i].y *= 0.5f * (float)ScreenHeight();
                 }
 
+                vecTriToRaster.push_back(triProjected);
+/*
                 FillTriangle(triProjected.p[0].x, triProjected.p[0].y,
                              triProjected.p[1].x, triProjected.p[1].y,
                              triProjected.p[2].x, triProjected.p[2].y, {(int)dp, (int)dp, (int)dp});
                 DrawTriangle(triProjected.p[0].x, triProjected.p[0].y,
                              triProjected.p[1].x, triProjected.p[1].y,
-                             triProjected.p[2].x, triProjected.p[2].y, {0, 0, 0});
+                             triProjected.p[2].x, triProjected.p[2].y, {0, 0, 0});*/
             }
         }
+
+        sort(vecTriToRaster.begin(), vecTriToRaster.end(), [](triangle &t1,triangle &t2)
+        {
+            float z1 = (t1.p[0].z+t1.p[1].z+t1.p[2].z) / 3.0f;
+            float z2 = (t2.p[0].z+t2.p[1].z+t2.p[2].z) / 3.0f;
+            return z1 > z2;
+        } );
+
+        for (auto &triProjected : vecTriToRaster)
+        {
+            FillTriangle(triProjected.p[0].x, triProjected.p[0].y,
+                        triProjected.p[1].x, triProjected.p[1].y,
+                        triProjected.p[2].x, triProjected.p[2].y, {triProjected.dp, triProjected.dp, triProjected.dp});//{(int)dp, (int)dp, (int)dp});
+            //DrawTriangle(triProjected.p[0].x, triProjected.p[0].y,
+            //            triProjected.p[1].x, triProjected.p[1].y,
+            //            triProjected.p[2].x, triProjected.p[2].y, {0, 0, 0});
+        }
+
         return true;
     }
 };
+
 
 int main()
 {
