@@ -25,8 +25,20 @@ struct mesh
 struct mat4x4
 {
     float m[4][4] = { 0 };
+    friend ostream& operator<<(ostream& os, const mat4x4& dt);
 };
-
+ostream& operator<<(ostream& os, const mat4x4& dt)
+{
+    for(int i = 0;i<4;i++)
+    {
+        for(int j =0;j<4;j++)
+        {
+            os << dt.m[i][j] << " ";
+        }
+        os << endl;
+    }
+    return os;
+}
 
 class Example : public olc::PixelGameEngine
 {
@@ -160,7 +172,7 @@ public:
                 multiplyMatrixVector(triRotatedZ.p[i], triRotatedZX.p[i], matRotY);
 
                 triTranslated.p[i] = triRotatedZX.p[i];
-                triTranslated.p[i].z = triRotatedZX.p[i].z + 3.0f;
+                triTranslated.p[i].z = triRotatedZX.p[i].z + 30.0f;
             }
             vec3d normal, line1, line2;
             line1.x = triTranslated.p[1].x - triTranslated.p[0].x;
@@ -195,7 +207,7 @@ public:
                     triProjected.p[i].x *= 0.5f * (float)ScreenWidth();
                     triProjected.p[i].y *= 0.5f * (float)ScreenHeight();
                 }
-
+                cout<<matProj<<endl;
                 
                 FillTriangle(triProjected.p[0].x, triProjected.p[0].y,
                     triProjected.p[1].x, triProjected.p[1].y,

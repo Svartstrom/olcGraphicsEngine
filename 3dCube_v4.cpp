@@ -14,20 +14,19 @@ struct mesh;
 struct mat4x4;
 
 
-
-
 struct vec3d
 {
     float x, y, z, w;
     vec3d() : x(0), y(0), z(0) {}
     vec3d(int _x) : x(_x), y(_x), z(_x), w(1) {}
     vec3d(float _x) : x(_x), y(_x), z(_x), w(1) {}
-    vec3d(float _x, float _y, float _z) : x(_x), y(_y), z(_z), w(1) {cout<<_x<<" "<<_y<<" "<<_z<<endl;}
+    vec3d(float _x, float _y, float _z) : x(_x), y(_y), z(_z), w(1) {}
     vec3d(int _x, int _y, int _z) : x((float)_x), y((float)_y), z((float)_z), w(1) {}
 
     vec3d operator + (const vec3d &rhs);
     vec3d operator - (const vec3d &rhs);
     vec3d operator * (const mat4x4 &rhs);
+    vec3d operator / (const float  rhs);
 
     vec3d cross(const vec3d &rhs);
     vec3d normal(void);
@@ -39,7 +38,7 @@ struct vec3d
 
 ostream& operator<<(ostream& os, const vec3d& dt)
 {
-    os << dt.x << " "<< dt.y << " "<< dt.z << endl;
+    os << dt.x << " "<< dt.y << " "<< dt.z;
     return os;
 }
 
@@ -65,7 +64,6 @@ struct triangle
              float _x1, float _y1, float _z1, 
              float _x2, float _y2, float _z2)
     {
-        //cout<<"long tri"<<endl;
         p[0] = vec3d(_x0, _y0, _z0);
         p[1] = vec3d(_x1, _y1, _z1);
         p[2] = vec3d(_x2, _y2, _z2);
@@ -89,10 +87,25 @@ struct mesh
 struct mat4x4
 {
     float m[4][4] = {0};
+    friend ostream& operator<<(ostream& os, const mat4x4& dt);
 };
+
+ostream& operator<<(ostream& os, const mat4x4& dt)
+{
+    for(int i = 0;i<4;i++)
+    {
+        for(int j =0;j<4;j++)
+        {
+            os << dt.m[i][j] << " ";
+        }
+        os << endl;
+    }
+    return os;
+}
 
 vec3d vec3d::operator + (const vec3d &rhs) { return vec3d(this->x + rhs.x, this->y + rhs.y, this->z + rhs.z);}
 vec3d vec3d::operator - (const vec3d &rhs) { return vec3d(this->x - rhs.x, this->y - rhs.y, this->z - rhs.z);}
+vec3d vec3d::operator / (const float rhs){ return vec3d(this->x / rhs, this->y / rhs, this->z / rhs);}
 vec3d vec3d::operator * (const mat4x4 &rhs) 
 {
     vec3d out;
@@ -104,6 +117,7 @@ vec3d vec3d::operator * (const mat4x4 &rhs)
 
     return out;
 }
+
 vec3d vec3d::cross(const vec3d &rhs)
 {
     return vec3d(this->y * rhs.z - this->z * rhs.y,
@@ -134,15 +148,27 @@ private:
     mesh meshCube;
     mat4x4 matProj;
     vec3d vCamera = {0, 0, 0};
+    vec3d translator = {0, 0, 10};
     mat4x4 matRotZ, matRotY, matRotX;
+    triangle triProjected, triTranslated, triRotatedZ, triRotatedZX;
+
     float fTheta = 0;
     float fNear = 0.1f;
-    float fFar = 100.0f;
+    float fFar = 1.0f;
     float fFovDeg = 90.0f;
     float fAspectRatio = (float)ScreenHeight() / (float)ScreenWidth();
     float fFovRad = 1.0f / tanf(fFovDeg * 0.5f / 180.0f * 3.141592f);
     float bias = 0.5f;
-    triangle triProjected, triTranslated, triRotatedZ, triRotatedZX;
+
+    mat4x4 matrixUnit()
+    {
+        mat4x4 matRot;
+        matRot.m[0][0] = 1;
+        matRot.m[1][1] = 1;
+        matRot.m[2][2] = 1;
+        matRot.m[3][3] = 1;
+        return matRot;
+    }
 
     mat4x4 matrixRotationX(float fTheta)
     {
@@ -179,8 +205,9 @@ private:
     }
     mat4x4 matrixMakeProjection(float fFovDeg, float fAspectRatio, float fFar, float fNear)
     {
-        float fFovRad = 1.0f / tanf(fFovDeg * 0.5f / 180.0f * 3.141592f);
         mat4x4 matProj;
+
+        float fFovRad = 1.0f / tanf(fFovDeg * 0.5f / 180.0f * 3.141592f);
         matProj.m[0][0] = fAspectRatio * fFovRad;
         matProj.m[1][1] = fFovRad;
         matProj.m[2][2] = fFar / (fFar - fNear);            // q
@@ -189,57 +216,57 @@ private:
         matProj.m[3][3] = 0.0f;
         return matProj;
     }
-    vector<triangle> cubeMaker(vector<triangle> world, float Origo)
+    vector<triangle> cubeMaker(vector<triangle> world, vec3d Origo)
     {
-        //world.push_back (triangle());
-        //{
-            //SOUTH
-        world.push_back(triangle(-0.5+Origo, -0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo));
-        world.push_back(triangle(-0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, -0.5+Origo));
+        // triangle(float _x0, float _y0, float _z0, float _x1, float _y1, float _z1, float _x2, float _y2, float _z2)
+        //SOUTH
+        world.push_back(triangle(-0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z, -0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z));
+        world.push_back(triangle(-0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z));
 
         //EAST
-        world.push_back(triangle(0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo));
-        world.push_back(triangle(0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo));
+        world.push_back(triangle(0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z));
+        world.push_back(triangle(0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z, 0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z));
 
         //NORTH
-        world.push_back(triangle(0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo));
-        world.push_back(triangle(0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo));
+        world.push_back(triangle(0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z, -0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z));
+        world.push_back(triangle(0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z, -0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z, -0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z));
 
         //WEST
-        world.push_back(triangle(-0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo));
-        world.push_back(triangle(-0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, -0.5+Origo, -0.5+Origo, -0.5+Origo));
+        world.push_back(triangle(-0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z, -0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z, -0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z));
+        world.push_back(triangle(-0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z, -0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z, -0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z));
 
         //TOP
-        world.push_back(triangle(-0.5+Origo, 0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo));
-        world.push_back(triangle(-0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo));
+        world.push_back(triangle(-0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z, -0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z));
+        world.push_back(triangle(-0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, 0.5+Origo.z, 0.5+Origo.x, 0.5+Origo.y, -0.5+Origo.z));
 
         //BOTTOM
-        world.push_back(triangle(-0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, -0.5+Origo));
-        world.push_back(triangle(-0.5+Origo, -0.5+Origo, 0.5+Origo, 0.5+Origo, -0.5+Origo, -0.5+Origo, 0.5+Origo, -0.5+Origo, 0.5+Origo));
-        //};
-        //cout << "Length of array = " << world.size() << std::endl;
+        world.push_back(triangle(-0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z, -0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z));
+        world.push_back(triangle(-0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z, 0.5+Origo.x, -0.5+Origo.y, -0.5+Origo.z, 0.5+Origo.x, -0.5+Origo.y, 0.5+Origo.z));
+
         return world;
     }
 
 public:
     bool OnUserCreate() override
     {
-        //mesh meshCube;
-        meshCube.tris = cubeMaker(meshCube.tris, 0.0);
-        //cout << "Length of array = " << meshCube.tris.size() << std::endl;
-        /*for (auto tri : meshCube.tris)
-        {
-        //cout<<"meshCube.tris[0]"<<endl;
-        cout<<tri<<endl;
-        }*/
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d());
+
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,0,0));
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(-1,0,0));
+
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(0,1,0));
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(0,-1,0));
+
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(0,0,1));
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(0,0,-1));
+
         matProj = matrixMakeProjection(fFovDeg, fAspectRatio, fFar, fNear);
-        //cout<<"end"<<endl;
+
         return true;
     }
 
     bool OnUserUpdate(float fElapsedTime) override
     {
-
         // Clear Screen
         FillRect(0, 0, ScreenWidth(), ScreenHeight(), olc::Pixel(0, 0, 0));
 
@@ -248,21 +275,17 @@ public:
         matRotX = matrixRotationX(fTheta * bias);
         matRotY = matrixRotationY(fTheta);
         matRotZ = matrixRotationZ(fTheta);
-        //cout<<"end2"<<endl;
-        //cout << "Length of array = " << meshCube.tris.size() << std::endl;
+
         for (auto tri : meshCube.tris)
         {
-            //cout<<"end2"<<endl;
             for (int i = 0; i < 3; i++)
             {
-                //cout<<tri.p[i]<<" ";
                 triRotatedZ.p[i] = tri.p[i] * matRotZ;
                 triRotatedZX.p[i] = triRotatedZ.p[i] * matRotX;
 
-                triTranslated.p[i] = triRotatedZX.p[i];
-                triTranslated.p[i].z = triRotatedZX.p[i].z + 15.0f;
+                triTranslated.p[i] = triRotatedZX.p[i] + translator;
             }
-            //cout<<"end"<<endl;
+
             vec3d normal, line1, line2;
 
             line1 = triTranslated.p[1] - triTranslated.p[0];
@@ -283,10 +306,13 @@ public:
 
                 for (int i = 0; i < 3; i++)
                 {
+                    cout<<triTranslated.p[i]<<" : "<<endl;
                     triProjected.p[i] = triTranslated.p[i] * matProj;
-
-                    triProjected.p[i].x += 1.0f;
-                    triProjected.p[i].y += 1.0f;
+                    if (triProjected.p[i].w != 0)
+                    {
+                        triProjected.p[i] = triProjected.p[i] / triProjected.p[i].w;
+                    }
+                    triProjected.p[i] = triProjected.p[i] + vec3d(1.0f, 1.0f, 0.0f);
 
                     triProjected.p[i].x *= 0.5f * (float)ScreenWidth();
                     triProjected.p[i].y *= 0.5f * (float)ScreenHeight();
@@ -300,7 +326,6 @@ public:
                              triProjected.p[2].x, triProjected.p[2].y, {0, 0, 0});
             }
         }
-
         return true;
     }
 };
