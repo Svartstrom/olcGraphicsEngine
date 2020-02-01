@@ -1,10 +1,24 @@
-main: 3dCube 3dCube_v2 3dCube_v4
+#!/usr/bin/make -f
 
-3dCube: 3dCube.cpp
-	g++ -o 3dCube 3dCube.cpp -lX11 -lGL -lpthread -lpng -lstdc++fs
+CXXFLAGS=-lX11 -lGL -lpthread -lpng -lstdc++fs
+CXX=g++
 
-3dCube_v2: 3dCube_v2.cpp
-	g++ -o 3dCube_v2 3dCube_v2.cpp -lX11 -lGL -lpthread -lpng -lstdc++fs
+#main: 3dCube_v4# 3dCube_v2 3dCube_v4
+main: 3dCube_v4.o 3d_triangle.o 3d_vec3d.o 3d_mat4x4.o
+	$(CXX) -o 3dCube_v4 3dCube_v4.o 3d_triangle.o 3d_vec3d.o 3d_mat4x4.o $(CXXFLAGS)
 
-3dCube_v4: 3dCube_v4.cpp
-	g++ -o 3dCube_v4 3dCube_v4.cpp -lX11 -lGL -lpthread -lpng -lstdc++fs
+#3dCube: 3dCube.cpp 3dCube_structures.cpp
+#	g++ -o 3dCube 3dCube.cpp 3dCube_structures.cpp -lX11 -lGL -lpthread -lpng -lstdc++fs
+#
+#3dCube_v2: 3dCube_v2.cpp 3dCube_structures.cpp
+#	g++ -o 3dCube_v2 3dCube_v2.cpp 3dCube_structures.cpp -lX11 -lGL -lpthread -lpng -lstdc++fs
+#
+#3dCube_v4: 3dCube_v4.cpp 3dCube_structures.cpp
+#	g++ -o 3dCube_v4 3dCube_v4.cpp 3dCube_structures.cpp CXXFLAGS
+
+3dCube_v4.o: 3dCube_v4.cpp 3d_vec3d.hpp 3d_mesh.hpp 3d_mat4x4.hpp 3d_triangle.hpp 
+	$(CXX) -c 3dCube_v4.cpp $(CXXFLAGS)
+
+3d_triangle.o: 3d_triangle.hpp 3d_vec3d.hpp
+3d_vec3d.o: 3d_vec3d.hpp 3d_mat4x4.hpp
+3d_mat4x4.o: 3d_mat4x4.hpp
