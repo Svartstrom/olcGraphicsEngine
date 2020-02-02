@@ -324,6 +324,7 @@ public:
         //matWorld = matWorld * matRotX;
         //matWorld = matrixUnit();
         //matWorld = matWorld * matRotZ;
+        //testing
         matWorld = matWorld * matTrans;
 
         vUp = vec3d(0,1,0);
