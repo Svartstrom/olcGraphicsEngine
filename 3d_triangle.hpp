@@ -7,6 +7,7 @@ struct triangle
 {
     vec3d p[3] = {0};
     vec3d col = vec3d(255);
+    
     triangle()
     {
         p[0] = vec3d();

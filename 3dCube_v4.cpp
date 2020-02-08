@@ -7,6 +7,7 @@
 #include "3d_mesh.hpp"
 #include "3d_mat4x4.hpp"
 #include "3d_triangle.hpp"
+#include "3d_camera.hpp"
 
 #include <fstream>
 #include <strstream>
@@ -28,7 +29,7 @@ private:
     mesh meshCube;
     mat4x4 matProj;
     vec3d vUp;
-    vec3d vCamera= vec3d(0,0,0);
+    camera Camera = camera();
     vec3d vLookDir, vTarget;
     
     vec3d translator = {0, 0, 15};
@@ -296,18 +297,18 @@ public:
 
     bool OnUserUpdate(float fElapsedTime) override
     {
-        vec3d vForward = vLookDir * 8.0f * fElapsedTime;
-        vec3d vLeft = vLookDir * 8.0f * fElapsedTime * matrixRotationY(3.141592/2.0f);
+        vec3d vForward = Camera.dir * 8.0f * fElapsedTime;
+        vec3d vLeft = Camera.dir * 8.0f * fElapsedTime * matrixRotationY(3.141592/2.0f);
         fTheta += 1.0f * fElapsedTime;
 
-        if (GetKey(olc::Key::DOWN ).bHeld) { vCamera.y += 1.0f * fElapsedTime; }
-        if (GetKey(olc::Key::UP   ).bHeld) { vCamera.y -= 1.0f * fElapsedTime; }
+        if (GetKey(olc::Key::DOWN ).bHeld) { Camera.pos.y += 1.0f * fElapsedTime; }
+        if (GetKey(olc::Key::UP   ).bHeld) { Camera.pos.y -= 1.0f * fElapsedTime; }
         
-        if (GetKey(olc::Key::RIGHT).bHeld) { vCamera = vCamera - vLeft; }
-        if (GetKey(olc::Key::LEFT ).bHeld) { vCamera = vCamera + vLeft; }
+        if (GetKey(olc::Key::RIGHT).bHeld) { Camera.pos = Camera.pos - vLeft; }
+        if (GetKey(olc::Key::LEFT ).bHeld) { Camera.pos = Camera.pos + vLeft; }
 
-        if (GetKey(olc::Key::W).bHeld) { vCamera = vCamera + vForward; }
-        if (GetKey(olc::Key::S).bHeld) { vCamera = vCamera - vForward; }
+        if (GetKey(olc::Key::W).bHeld) { Camera.pos = Camera.pos + vForward; }
+        if (GetKey(olc::Key::S).bHeld) { Camera.pos = Camera.pos - vForward; }
 
         if (GetKey(olc::Key::D).bHeld) { fYaw -= 2.0f * fElapsedTime; }
         if (GetKey(olc::Key::A).bHeld) { fYaw += 2.0f * fElapsedTime; }
@@ -331,10 +332,10 @@ public:
         vTarget = vec3d(0, 0, 1);
 
         mat4x4 matCameraRot = matrixRotationY(fYaw);
-        vLookDir = vTarget * matCameraRot;
-        vTarget = vCamera + vLookDir;
+        Camera.dir = vTarget * matCameraRot;
+        vTarget = Camera.pos + Camera.dir;
 
-        mat4x4 matView = PointAt(vCamera, vTarget, vUp);
+        mat4x4 matView = PointAt(Camera.pos, vTarget, vUp);
 
         vector<triangle> vecTriToRaster;
 
@@ -352,7 +353,7 @@ public:
 
                 normal = line1.cross(line2).normal();
 
-                vec3d cameraRay = triTranslated.p[0] - vCamera;
+                vec3d cameraRay = triTranslated.p[0] - Camera.pos;
                 float D = cameraRay.dot(normal);
 
                 if (D < 0.0)
