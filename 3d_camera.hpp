@@ -2,6 +2,7 @@
 #define CAMERA_3D
 
 #include "3d_vec3d.hpp"
+#include "olcPixelGameEngine.h"
 
 struct camera
 {
@@ -18,6 +19,8 @@ struct camera
         pos = vec3d(_x);
         dir = vec3d(_y);
     }
+    void move(float fElapsedTime);
+    void rotate(float fElapsedTime);
 };
 
 #endif
