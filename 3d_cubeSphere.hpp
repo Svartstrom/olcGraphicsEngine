@@ -7,6 +7,7 @@
 #include <vector>
 #include <cmath>
 
+#define PI 3.141592026F
 
 struct TerrainFace
 {
@@ -36,7 +37,8 @@ private:
     vec3d axisA;
     vec3d axisB;
 
-    vec3d coordFromIndex(int index);
+    vec3d coordFromIndexFlat(int index);
+    vec3d coordFromIndexSphere(int index);
 };
 
 struct Cube
@@ -58,27 +60,9 @@ private:
 
 
 };
-/*
-# python
-    x = math.cos(phi) * math.cos(theta) * rho
-    y = math.cos(phi) * math.sin(theta) * rho
-    z = math.sin(phi) * rho # z is 'up'
-*/
-vec3d TerrainFace::coordFromIndex(int index)
+
+vec3d TerrainFace::coordFromIndexFlat(int index)
 {
-    /*
-    vec3d topLeft = this->localUp * this->dist + this->axisA * this->width * 0.5f + this->axisB * this->height * 0.5f;
-    float pX = (index%this->resolution)/(float)(this->resolution-1);
-    float pY = (index/this->resolution)/(float)(this->resolution-1);
-
-
-    
-    float x = cosf(pX) * cosf(pY) * this->rad;
-    float y = cosf(pX) * sinf(pY) * this->rad;
-    float z = sinf(pX) * this->rad;// # z is 'up'
-    return 
-    vec3d(x,y,z);*/
-    
     vec3d localCenter = this->localUp * this->dist;
     vec3d deltaA = (this->axisA * (this->width  / 2.0f));
     vec3d deltaB = (this->axisB * (this->height / 2.0f));
@@ -87,12 +71,19 @@ vec3d TerrainFace::coordFromIndex(int index)
     float pY = (index/this->resolution)/(float)(this->resolution-1);
     vec3d Adir = (this->axisA * pX * this->width);
     vec3d Bdir = (this->axisB * pY * this->height);
-    //vec3d Rdir = this->localUp * cosf(3.141592f/2.0f - (3.141592f * ((float)index/(float)this->resolution)));
     vec3d targetNode = topLeft + Adir + Bdir;
     vec3d deltaVec = localCenter - targetNode;
-    //std::cout<<Rdir<<std::endl;
-    return targetNode;// * Rdir;
+    return targetNode;
+}
+vec3d TerrainFace::coordFromIndexSphere(int index)
+{
+    vec3d topLeft = this->localUp * this->dist + this->axisA * this->width * 0.5f + this->axisB * this->height * 0.5f;
+    float deltaAng = PI / (2.0f * (float)this->resolution-1);
 
+    vec3d retVec = topLeft * matrixRotationU(&this->axisA, (index%this->resolution)*deltaAng);
+    retVec = retVec * matrixRotationU(&this->axisB, (index/this->resolution)*deltaAng);
+
+    return retVec;
 }
 
 
@@ -107,14 +98,14 @@ std::vector<triangle> TerrainFace::constructMesh(std::vector<triangle> world)
             if ( x != this->resolution-1 && y != this->resolution-1)
             {
                 world.push_back(
-                    triangle(coordFromIndex(i), 
-                             coordFromIndex(i + this->resolution + 1), 
-                             coordFromIndex(i + this->resolution))
+                    triangle(coordFromIndexSphere(i), 
+                             coordFromIndexSphere(i + this->resolution + 1), 
+                             coordFromIndexSphere(i + this->resolution))
                     );
                 world.push_back(
-                    triangle(coordFromIndex(i),
-                             coordFromIndex(i + 1),
-                             coordFromIndex(i + this->resolution + 1))
+                    triangle(coordFromIndexSphere(i),
+                             coordFromIndexSphere(i + 1),
+                             coordFromIndexSphere(i + this->resolution + 1))
                     );
             }
         }

@@ -73,8 +73,8 @@ mat4x4 matrixRotationZ(float fTheta)
 mat4x4 matrixRotationU(vec3d *U, float fTheta)
 {
     mat4x4 matRot;
-    float cT = cos(fTheta);
-    float sT = sin(fTheta);
+    float cT = cosf(fTheta);
+    float sT = sinf(fTheta);
     float x = U->x;
     float y = U->y;
     float z = U->z;
