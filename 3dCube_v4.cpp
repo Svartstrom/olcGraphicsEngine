@@ -270,7 +270,6 @@ public:
 
         vUp = vec3d(0,1,0);
         vTarget = vec3d(0, 0, 1);
-
         mat4x4 matCameraRot = matrixRotationY(fYaw);
         Camera.dir = vTarget * matCameraRot;
         vTarget = Camera.pos + Camera.dir;

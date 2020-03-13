@@ -18,6 +18,7 @@ mat4x4 matrixUnit();
 mat4x4 matrixRotationX(float fTheta);
 mat4x4 matrixRotationY(float fTheta);
 mat4x4 matrixRotationZ(float fTheta);
+mat4x4 matrixRotationU(vec3d *U, float fTheta);
 mat4x4 matrixMakeProjection(float fFovDeg, float fAspectRatio, float fFar, float fNear);
 mat4x4 matrixTranslation(vec3d *t);
 mat4x4 matrixTranslation(float x, float y, float z);

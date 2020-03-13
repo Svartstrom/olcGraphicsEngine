@@ -70,6 +70,30 @@ mat4x4 matrixRotationZ(float fTheta)
     matRot.m[3][3] = 1;
     return matRot;
 }
+mat4x4 matrixRotationU(vec3d *U, float fTheta)
+{
+    mat4x4 matRot;
+    float cT = cos(fTheta);
+    float sT = sin(fTheta);
+    float x = U->x;
+    float y = U->y;
+    float z = U->z;
+    float cInv = 1 - cT;
+    matRot.m[0][0] = x*x*cInv + cT;
+    matRot.m[1][0] = x*y*cInv - z*sT;
+    matRot.m[2][0] = x*z*cInv + y*sT;
+    
+    matRot.m[0][1] = y*x*cInv + z*sT;
+    matRot.m[1][1] = y*y*cInv + cT;
+    matRot.m[2][1] = y*z*cInv - x*sT;
+
+    matRot.m[0][2] = z*x*cInv - y*sT;
+    matRot.m[1][2] = z*y*cInv + x*sT;
+    matRot.m[2][2] = z*z*cInv + cT;
+    
+    matRot.m[3][3] = 1;
+    return matRot;
+}
 mat4x4 matrixMakeProjection(float fFovDeg, float fAspectRatio, float fFar, float fNear)
 {
     mat4x4 matProj;
