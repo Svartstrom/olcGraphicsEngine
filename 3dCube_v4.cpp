@@ -8,6 +8,7 @@
 #include "3d_mat4x4.hpp"
 #include "3d_triangle.hpp"
 #include "3d_camera.hpp"
+#include "3d_cubeSphere.hpp"
 
 #include <fstream>
 #include <strstream>
@@ -46,79 +47,6 @@ private:
     float fFovRad = 1.0f / tanf(fFovDeg * 0.5f / 180.0f * 3.141592f);
     float bias = 0.5f;
 
-    mat4x4 matrixUnit()
-    {
-        mat4x4 matRot;
-        matRot.m[0][0] = 1;
-        matRot.m[1][1] = 1;
-        matRot.m[2][2] = 1;
-        matRot.m[3][3] = 1;
-        return matRot;
-    }
-
-    mat4x4 matrixRotationX(float fTheta)
-    {
-        mat4x4 matRot;
-        matRot.m[0][0] = 1;
-        matRot.m[1][1] = cosf(fTheta);
-        matRot.m[1][2] = sinf(fTheta);
-        matRot.m[2][1] = -sinf(fTheta);
-        matRot.m[2][2] = cosf(fTheta);
-        matRot.m[3][3] = 1;
-        return matRot;
-    }
-    mat4x4 matrixRotationY(float fTheta)
-    {
-        mat4x4 matRot;
-        matRot.m[0][0] = cosf(fTheta);
-        matRot.m[1][1] = 1;
-        matRot.m[0][2] = sinf(fTheta);
-        matRot.m[2][0] = -sinf(fTheta);
-        matRot.m[2][2] = cosf(fTheta);
-        matRot.m[3][3] = 1;
-        return matRot;
-    }
-    mat4x4 matrixRotationZ(float fTheta)
-    {
-        mat4x4 matRot;
-        matRot.m[0][0] = cosf(fTheta);
-        matRot.m[0][1] = sinf(fTheta);
-        matRot.m[1][0] = -sinf(fTheta);
-        matRot.m[1][1] = cosf(fTheta);
-        matRot.m[2][2] = 1;
-        matRot.m[3][3] = 1;
-        return matRot;
-    }
-    mat4x4 matrixTranslation(vec3d t)
-    {
-        mat4x4 matTrans;
-        matTrans.m[0][0] = 1.0f;
-        matTrans.m[1][1] = 1.0f;
-        matTrans.m[2][2] = 1.0f;
-        matTrans.m[3][3] = 1.0f;
-        matTrans.m[3][0] = t.x;
-        matTrans.m[3][1] = t.y;
-        matTrans.m[3][2] = t.z;
-        return matTrans;
-    }
-    mat4x4 matrixTranslation(float x, float y, float z)
-    {
-
-        return matrixTranslation(vec3d(x,y,z));
-    }
-    mat4x4 matrixMakeProjection(float fFovDeg, float fAspectRatio, float fFar, float fNear)
-    {
-        mat4x4 matProj;
-
-        float fFovRad = 1.0f / tanf(fFovDeg * 0.5f / 180.0f * 3.141592f);
-        matProj.m[0][0] = fAspectRatio * fFovRad;
-        matProj.m[1][1] = fFovRad;
-        matProj.m[2][2] = fFar / (fFar - fNear);            // q
-        matProj.m[3][2] = (-fFar * fNear) / (fFar - fNear); //-zN q
-        matProj.m[2][3] = 1.0f;
-        matProj.m[3][3] = 0.0f;
-        return matProj;
-    }
     mat4x4 matrixPointAt(vec3d & pos, vec3d & newForward, vec3d & newUp, vec3d & newRight)
     {
         mat4x4 matrix;
@@ -144,18 +72,6 @@ private:
         vec3d newRight = newUp.cross(newForward);
 
         return matrixLookAt(pos, newForward, newUp, newRight);
-    }
-
-    vec3d Vector_IntersectPlane(vec3d & plane_p, vec3d &plane_n, vec3d &line_start, vec3d &line_end)
-    {
-        plane_n = plane_n.normal();
-        float plane_d = -plane_n.dot(plane_p);
-        float ad = line_start.dot(plane_n);
-        float bd = line_end.dot(plane_n);
-        float t  = (-plane_d -ad) / (bd - ad);
-        vec3d lineStartToEnd = line_end - line_start;
-        vec3d lineToIntersect = lineStartToEnd * t;
-        return line_start + lineToIntersect;
     }
 
     int Triangle_ClipAgainstPlane(vec3d plane_p, vec3d plane_n, triangle &in_tri, triangle &out_tri1, triangle &out_tri2)
@@ -191,7 +107,7 @@ private:
         }
         if (nInsidePointCount == 1 && nOutsidePointCount == 2)
         {
-            out_tri1.col = vec3d(255,0,0);//in_tri.col;
+            out_tri1.col = in_tri.col;
 
             out_tri1.p[0] = *insidePoints[0];
             out_tri1.p[1] = Vector_IntersectPlane(plane_p,plane_n,*insidePoints[0],*outsidePoints[0]);
@@ -201,8 +117,8 @@ private:
         }
         if (nInsidePointCount == 2 && nOutsidePointCount == 1)
         {
-            out_tri1.col = vec3d(0,255,0);//in_tri.col;
-            out_tri2.col = vec3d(0,0,255);//in_tri.col;
+            out_tri1.col = in_tri.col;
+            out_tri2.col = in_tri.col;
 
             out_tri1.p[0] = *insidePoints[0];
             out_tri1.p[1] = *insidePoints[1];
@@ -269,13 +185,14 @@ public:
     bool OnUserCreate() override
     {
         int d = 1;
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
+        
+        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
         //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,10,1), vec3d(0,5,0));
         //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,10), vec3d(0,0,5));
         //cout<<meshCube.tris[0]<<endl;
         //cout<<meshCube.tris[1]<<endl;
         //cout<<meshCube.tris[2]<<endl;
-
+/*
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(1,0,0));
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0));
 
@@ -284,14 +201,37 @@ public:
 
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(0,0,1));
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(0,0,-1));
-
-        world.push_back(meshCube);
-        meshCube.tris.clear();
+*/
+        
+        
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0)*2.0f);
-        world.push_back(meshCube);
+        
 
         matProj = matrixMakeProjection(fFovDeg, fAspectRatio, fFar, fNear);
-        
+        //cout<<meshCube.tris.size()<<endl;
+        //TerrainFace TF0 = TerrainFace(2, 2, 7, vec3d(0,0,-1), 1);
+        Cube G0 = Cube(0,0,2);
+        //TerrainFace TF1 = TerrainFace(2, 2, 3, vec3d(0,1,0), 1);
+        //TerrainFace TF2 = TerrainFace(2, 2, 3, vec3d(1,0,0), 1);
+        meshCube.tris = G0.constructCube(meshCube.tris);
+        //cout<<meshCube.tris.size()<<endl;
+        //meshCube.tris = TF1.constructMesh(meshCube.tris);
+        //cout<<meshCube.tris.size()<<endl;
+        //meshCube.tris = TF2.constructMesh(meshCube.tris);
+        //cout<<meshCube.tris.size()<<endl;
+
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(1,0,0)*2.0f);
+        //cout<<meshCube.tris.size()<<endl;
+        world.push_back(meshCube);
+/*
+        for (auto meshCube: world)
+        {
+            for (auto tri : meshCube.tris)
+            {
+                cout<<tri<<endl;
+            }
+        }
+*/
         return true;
     }
 
@@ -317,7 +257,7 @@ public:
         //matRotY = matrixRotationY(fTheta);
         //matRotZ = matrixRotationZ(fTheta);
 
-        matTrans = matrixTranslation(translator);
+        matTrans = matrixTranslation(&translator);
 
         matWorld = matrixUnit();
 
@@ -341,6 +281,9 @@ public:
 
         for (auto meshCube: world)
         {
+            //cout<<Camera.pos<<" + "<<Camera.dir <<"__";
+            //cout<<meshCube.tris.size()<<" :: ";
+            
             for (auto tri : meshCube.tris)
             {
                 for (int i = 0; i < 3; i++)
@@ -408,6 +351,7 @@ public:
         
         float SH = (float)ScreenHeight();
         float SW = (float)ScreenWidth();
+        //cout<<vecTriToRaster.size()<<endl;
         for (auto triToRaster : vecTriToRaster)
         {
             triangle clipped[2];

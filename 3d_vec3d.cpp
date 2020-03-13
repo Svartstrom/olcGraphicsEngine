@@ -1,4 +1,3 @@
-
 #include "3d_vec3d.hpp"
 
 vec3d vec3d::operator + (const vec3d &rhs) { return vec3d(this->x + rhs.x, this->y + rhs.y, this->z + rhs.z);}
@@ -17,7 +16,7 @@ vec3d vec3d::operator * (const mat4x4 &rhs)
     out.w = this->x * rhs.m[0][3] + this->y * rhs.m[1][3] + this->z * rhs.m[2][3] + this->w * rhs.m[3][3];
 
     return out;
-}
+};
 
 
 vec3d vec3d::cross(const vec3d &rhs)
@@ -40,6 +39,18 @@ float vec3d::dot(const vec3d &rhs)
 
 std::ostream& operator<<(std::ostream& os, const vec3d& dt)
 {
-    os << dt.x << " "<< dt.y << " "<< dt.z;
+    os << dt.x << ", "<< dt.y << ", "<< dt.z;
     return os;
+}
+
+vec3d Vector_IntersectPlane(vec3d & plane_p, vec3d &plane_n, vec3d &line_start, vec3d &line_end)
+{
+    plane_n = plane_n.normal();
+    float plane_d = -plane_n.dot(plane_p);
+    float ad = line_start.dot(plane_n);
+    float bd = line_end.dot(plane_n);
+    float t  = (-plane_d -ad) / (bd - ad);
+    vec3d lineStartToEnd = line_end - line_start;
+    vec3d lineToIntersect = lineStartToEnd * t;
+    return line_start + lineToIntersect;
 }
