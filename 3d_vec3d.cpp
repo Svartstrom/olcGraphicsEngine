@@ -28,13 +28,18 @@ vec3d vec3d::cross(const vec3d &rhs)
 
 vec3d vec3d::normal(void)
 {
-    float l = sqrtf(pow(this->x, 2) + pow(this->y, 2) + pow(this->z, 2));
+    float l = this->abs();
     return vec3d(this->x / l, this->y / l, this->z / l);
 }
 
 float vec3d::dot(const vec3d &rhs)
 {
     return this->x * rhs.x + this->y * rhs.y + this->z * rhs.z;
+}
+
+float vec3d::abs()
+{
+    return sqrtf(pow(this->x, 2) + pow(this->y, 2) + pow(this->z, 2));
 }
 
 std::ostream& operator<<(std::ostream& os, const vec3d& dt)

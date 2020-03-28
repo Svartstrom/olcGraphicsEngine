@@ -4,10 +4,10 @@ CXXFLAGS=-lX11 -lGL -lpthread -lpng -lstdc++fs
 CXX=g++
 
 #main: 3dCube_v4# 3dCube_v2 3dCube_v4
-main: 3dCube_v4.o 3d_triangle.o 3d_vec3d.o 3d_mat4x4.o 3d_camera.o
-	$(CXX) -o 3dCube_v4 3dCube_v4.o 3d_triangle.o 3d_vec3d.o 3d_mat4x4.o 3d_camera.o $(CXXFLAGS)
+main: 3dCube_v4.o 3d_triangle.o 3d_vec3d.o 3d_mat4x4.o 3d_camera.o 3d_cubeSphere.o 3d_terrainface.o
+	$(CXX) -o 3dCube_v4 3dCube_v4.o 3d_triangle.o 3d_vec3d.o 3d_mat4x4.o 3d_camera.o 3d_cubeSphere.o 3d_terrainface.o $(CXXFLAGS)
 
-3dCube_v4.o: 3dCube_v4.cpp 3d_vec3d.hpp 3d_mesh.hpp 3d_mat4x4.hpp 3d_triangle.hpp 3d_camera.hpp 3d_cubeSphere.hpp
+3dCube_v4.o: 3dCube_v4.cpp 3d_vec3d.hpp 3d_mesh.hpp 3d_mat4x4.hpp 3d_triangle.hpp 3d_camera.hpp 3d_cubeSphere.hpp 3d_terrainface.hpp
 	$(CXX) -c 3dCube_v4.cpp $(CXXFLAGS)
 
 3d_camera.o: 3d_camera.hpp 3d_vec3d.hpp olcPixelGameEngine.h
@@ -16,3 +16,5 @@ main: 3dCube_v4.o 3d_triangle.o 3d_vec3d.o 3d_mat4x4.o 3d_camera.o
 3d_triangle.o: 3d_triangle.hpp 3d_vec3d.hpp
 3d_vec3d.o: 3d_vec3d.hpp 3d_mat4x4.hpp
 3d_mat4x4.o: 3d_mat4x4.hpp
+3d_cubeSphere.o: 3d_cubeSphere.hpp 3d_terrainface.hpp 3d_vec3d.hpp 3d_mesh.hpp 3d_triangle.hpp
+3d_terrainface.o: 3d_terrainface.hpp 3d_mat4x4.hpp 3d_vec3d.hpp 3d_triangle.hpp

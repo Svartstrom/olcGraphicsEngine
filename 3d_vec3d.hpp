@@ -24,6 +24,7 @@ struct vec3d
     vec3d cross(const vec3d &rhs);
     vec3d normal(void);
     float dot(const vec3d &rhs);
+    float abs();
 
     friend std::ostream& operator<<(std::ostream& os, const vec3d& dt);
 };

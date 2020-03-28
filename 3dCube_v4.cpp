@@ -9,6 +9,7 @@
 #include "3d_triangle.hpp"
 #include "3d_camera.hpp"
 #include "3d_cubeSphere.hpp"
+#include "3d_terrainface.hpp"
 
 #include <fstream>
 #include <strstream>
@@ -204,7 +205,7 @@ public:
 */
         
         
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0)*2.0f);
+        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0)*2.0f);
         
 
         matProj = matrixMakeProjection(fFovDeg, fAspectRatio, fFar, fNear);
@@ -220,7 +221,7 @@ public:
         //meshCube.tris = TF2.constructMesh(meshCube.tris);
         //cout<<meshCube.tris.size()<<endl;
 
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(1,0,0)*2.0f);
+        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(1,0,0)*2.0f);
         //cout<<meshCube.tris.size()<<endl;
         world.push_back(meshCube);
 /*
@@ -238,7 +239,8 @@ public:
     bool OnUserUpdate(float fElapsedTime) override
     {
         vec3d vForward = Camera.dir * 8.0f * fElapsedTime;
-        vec3d vLeft = Camera.dir * 8.0f * fElapsedTime * matrixRotationY(3.141592/2.0f);
+        vec3d Ydir = vec3d(0,-1,0);
+        vec3d vLeft = Camera.dir * 8.0f * fElapsedTime * matrixRotationU(&Ydir,3.141592/2.0f);
         fTheta += 1.0f * fElapsedTime;
 
         if (GetKey(olc::Key::DOWN ).bHeld) { Camera.pos.y += 1.0f * fElapsedTime; }
@@ -270,7 +272,8 @@ public:
 
         vUp = vec3d(0,1,0);
         vTarget = vec3d(0, 0, 1);
-        mat4x4 matCameraRot = matrixRotationY(fYaw);
+        
+        mat4x4 matCameraRot = matrixRotationU(&Ydir,fYaw);
         Camera.dir = vTarget * matCameraRot;
         vTarget = Camera.pos + Camera.dir;
 
