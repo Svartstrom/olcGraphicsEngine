@@ -2,7 +2,8 @@
 #define VEC3D_3D
 #include "3d_mat4x4.hpp"
 #include <cmath>
-//  struct mat4x4;
+struct mat4x4;
+
 struct vec3d
 {
     float x, y, z, w;
@@ -26,4 +27,6 @@ struct vec3d
 
     friend std::ostream& operator<<(std::ostream& os, const vec3d& dt);
 };
+
+vec3d Vector_IntersectPlane(vec3d & plane_p, vec3d &plane_n, vec3d &line_start, vec3d &line_end);
 #endif
