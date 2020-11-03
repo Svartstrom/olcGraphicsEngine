@@ -8,6 +8,7 @@
 #include "3d_mat4x4.hpp"
 #include "3d_triangle.hpp"
 #include "3d_camera.hpp"
+#include "3d_utilities.hpp"
 
 #include <fstream>
 #include <strstream>
@@ -29,7 +30,7 @@ private:
     mesh meshCube;
     mat4x4 matProj;
     vec3d vUp;
-    camera Camera = camera();
+    camera Camera = camera(vec3d(5,5,5),vec3d(0,0,1));
     vec3d vLookDir, vTarget;
     
     vec3d translator = {0, 0, 15};
@@ -216,6 +217,11 @@ private:
         }
     }
 
+    vector<triangle> bigCube(vector<triangle> world, vec3d Origo, int side_nr)
+    {
+        
+    }
+
     vector<triangle> cubeMaker(vector<triangle> world, vec3d dia, vec3d Origo)
     {
         // triangle(float _x0, float _y0, float _z0, float _x1, float _y1, float _z1, float _x2, float _y2, float _z2)
@@ -269,13 +275,13 @@ public:
     bool OnUserCreate() override
     {
         int d = 1;
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
+        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
         //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,10,1), vec3d(0,5,0));
         //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,10), vec3d(0,0,5));
         //cout<<meshCube.tris[0]<<endl;
         //cout<<meshCube.tris[1]<<endl;
         //cout<<meshCube.tris[2]<<endl;
-
+/*
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(1,0,0));
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0));
 
@@ -289,6 +295,8 @@ public:
         meshCube.tris.clear();
         meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0)*2.0f);
         world.push_back(meshCube);
+*/
+
 
         matProj = matrixMakeProjection(fFovDeg, fAspectRatio, fFar, fNear);
         
@@ -318,14 +326,7 @@ public:
         //matRotZ = matrixRotationZ(fTheta);
 
         matTrans = matrixTranslation(translator);
-
         matWorld = matrixUnit();
-
-        //matWorld = matWorld * matRotZ;
-        //matWorld = matWorld * matRotX;
-        //matWorld = matrixUnit();
-        //matWorld = matWorld * matRotZ;
-        //testing
         matWorld = matWorld * matTrans;
 
         vUp = vec3d(0,1,0);
@@ -360,7 +361,7 @@ public:
                 {
                     vec3d lightDirection = {0.0f, 0.0f, -1.0f};
                     
-                    //lightDirection = lightDirection - vCamera;
+                    lightDirection = lightDirection - Camera.pos;
                     lightDirection = lightDirection.normal();
                     //vec3d dp = vec3d(1,1,1)*lightDirection.dot(normal) * 255;
                     float dp = max(lightDirection.dot(normal),0.1f);
