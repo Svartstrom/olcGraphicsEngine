@@ -8,12 +8,8 @@
 #include "3d_mat4x4.hpp"
 #include "3d_triangle.hpp"
 #include "3d_camera.hpp"
-<<<<<<< HEAD
 #include "3d_utilities.hpp"
-||||||| merged common ancestors
-=======
 #include "3d_cubeSphere.hpp"
->>>>>>> 7120bc70344f989c332644cb0a245fe5de195f98
 
 #include <fstream>
 #include <strstream>
@@ -194,68 +190,10 @@ private:
 public:
     bool OnUserCreate() override
     {
-        int d = 1;
-<<<<<<< HEAD
-        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
-||||||| merged common ancestors
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
-=======
-        
-        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
->>>>>>> 7120bc70344f989c332644cb0a245fe5de195f98
-        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,10,1), vec3d(0,5,0));
-        //meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,10), vec3d(0,0,5));
-        //cout<<meshCube.tris[0]<<endl;
-        //cout<<meshCube.tris[1]<<endl;
-        //cout<<meshCube.tris[2]<<endl;
-/*
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(1,0,0));
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0));
-
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(0,1,0));
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(0,-1,0));
-
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(0,0,1));
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(0,0,-1));
-*/
-        
-        
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(-1,0,0)*2.0f);
-<<<<<<< HEAD
-        world.push_back(meshCube);
-*/
-
-||||||| merged common ancestors
-        world.push_back(meshCube);
-=======
-        
->>>>>>> 7120bc70344f989c332644cb0a245fe5de195f98
-
         matProj = matrixMakeProjection(fFovDeg, fAspectRatio, fFar, fNear);
-        //cout<<meshCube.tris.size()<<endl;
-        //TerrainFace TF0 = TerrainFace(2, 2, 7, vec3d(0,0,-1), 1);
         Cube G0 = Cube(0,0,2);
-        //TerrainFace TF1 = TerrainFace(2, 2, 3, vec3d(0,1,0), 1);
-        //TerrainFace TF2 = TerrainFace(2, 2, 3, vec3d(1,0,0), 1);
         meshCube.tris = G0.constructCube(meshCube.tris);
-        //cout<<meshCube.tris.size()<<endl;
-        //meshCube.tris = TF1.constructMesh(meshCube.tris);
-        //cout<<meshCube.tris.size()<<endl;
-        //meshCube.tris = TF2.constructMesh(meshCube.tris);
-        //cout<<meshCube.tris.size()<<endl;
-
-        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1)*d, vec3d(1,0,0)*2.0f);
-        //cout<<meshCube.tris.size()<<endl;
         world.push_back(meshCube);
-/*
-        for (auto meshCube: world)
-        {
-            for (auto tri : meshCube.tris)
-            {
-                cout<<tri<<endl;
-            }
-        }
-*/
         return true;
     }
 
@@ -281,15 +219,7 @@ public:
         //matRotY = matrixRotationY(fTheta);
         //matRotZ = matrixRotationZ(fTheta);
 
-<<<<<<< HEAD
         matTrans = matrixTranslation(translator);
-||||||| merged common ancestors
-        matTrans = matrixTranslation(translator);
-
-=======
-        matTrans = matrixTranslation(&translator);
-
->>>>>>> 7120bc70344f989c332644cb0a245fe5de195f98
         matWorld = matrixUnit();
         matWorld = matWorld * matTrans;
 
