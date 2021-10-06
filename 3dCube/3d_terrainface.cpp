@@ -11,7 +11,6 @@ vec3d TerrainFace::coordFromIndexFlat(int index)
     vec3d Adir = (this->axisA * pA * this->width);
     vec3d Bdir = (this->axisB * pB * this->height);
     vec3d targetNode = topLeft + Adir + Bdir;
-    vec3d deltaVec = localCenter - targetNode;
     return targetNode;
 }
 vec3d TerrainFace::coordFromIndexSphere(int index)

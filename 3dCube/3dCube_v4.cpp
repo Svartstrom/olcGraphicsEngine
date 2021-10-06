@@ -1,7 +1,5 @@
-
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
-//#include "3dCube_structures.hpp"
 
 #include "3d_vec3d.hpp"
 #include "3d_mesh.hpp"
@@ -255,20 +253,9 @@ public:
         if (GetKey(olc::Key::D).bHeld) { fYaw -= 2.0f * fElapsedTime; }
         if (GetKey(olc::Key::A).bHeld) { fYaw += 2.0f * fElapsedTime; }
         
-        //matRotX = matrixRotationX(fTheta * bias);
-        //matRotY = matrixRotationY(fTheta);
-        //matRotZ = matrixRotationZ(fTheta);
-
         matTrans = matrixTranslation(&translator);
 
-        matWorld = matrixUnit();
-
-        //matWorld = matWorld * matRotZ;
-        //matWorld = matWorld * matRotX;
-        //matWorld = matrixUnit();
-        //matWorld = matWorld * matRotZ;
-        //testing
-        matWorld = matWorld * matTrans;
+        matWorld = matrixUnit() * matTrans;
 
         vUp = vec3d(0,1,0);
         vTarget = vec3d(0, 0, 1);
@@ -282,10 +269,7 @@ public:
         vector<triangle> vecTriToRaster;
 
         for (auto meshCube: world)
-        {
-            //cout<<Camera.pos<<" + "<<Camera.dir <<"__";
-            //cout<<meshCube.tris.size()<<" :: ";
-            
+        {            
             for (auto tri : meshCube.tris)
             {
                 for (int i = 0; i < 3; i++)
@@ -330,7 +314,6 @@ public:
                                 triProjected.p[i] = triProjected.p[i] / triProjected.p[i].w;
                             }
                             triProjected.p[i] = triProjected.p[i] + vec3d(1.0f, 1.0f, 0.0f);
-                            //triProjected.col = dp;
 
                             triProjected.p[i].x *= 0.5f * (float)ScreenWidth();
                             triProjected.p[i].y *= 0.5f * (float)ScreenHeight();
@@ -353,7 +336,7 @@ public:
         
         float SH = (float)ScreenHeight();
         float SW = (float)ScreenWidth();
-        //cout<<vecTriToRaster.size()<<endl;
+        
         for (auto triToRaster : vecTriToRaster)
         {
             triangle clipped[2];
@@ -390,9 +373,9 @@ public:
                 FillTriangle(triToDraw.p[0].x, triToDraw.p[0].y,
                             triToDraw.p[1].x, triToDraw.p[1].y,
                             triToDraw.p[2].x, triToDraw.p[2].y, {triToDraw.col.x,triToDraw.col.y,triToDraw.col.z});
-                DrawTriangle(triToDraw.p[0].x, triToDraw.p[0].y,
-                            triToDraw.p[1].x, triToDraw.p[1].y,
-                            triToDraw.p[2].x, triToDraw.p[2].y, {0, 0, 0});
+                //DrawTriangle(triToDraw.p[0].x, triToDraw.p[0].y,
+                //            triToDraw.p[1].x, triToDraw.p[1].y,
+                //            triToDraw.p[2].x, triToDraw.p[2].y, {0, 0, 0});
             }
         }
         return true;

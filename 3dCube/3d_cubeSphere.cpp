@@ -4,7 +4,7 @@
 
 std::vector<triangle> Cube::constructCube(std::vector<triangle> world)
 {
-    int resolution = 7;
+    int resolution = 70;
     TerrainFace TF0 = TerrainFace(this->r, this->r, resolution, vec3d( 0, 0,-1), this->r / 2);
     world = TF0.constructMesh(world);
     TerrainFace TF1 = TerrainFace(this->r, this->r, resolution, vec3d( 0, 0, 1), this->r / 2);
