@@ -4,6 +4,7 @@
 void camera::move(float fElapsedTime)
 {
 
+
 }
 
 void camera::rotate(float fElapsedTime)

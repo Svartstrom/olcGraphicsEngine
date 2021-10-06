@@ -1,3 +1,4 @@
+
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
@@ -7,8 +8,6 @@
 #include "3d_triangle.hpp"
 #include "3d_camera.hpp"
 #include "3d_utilities.hpp"
-#include "3d_cubeSphere.hpp"
-#include "3d_terrainface.hpp"
 
 #include <fstream>
 #include <strstream>
@@ -33,7 +32,7 @@ private:
     camera Camera = camera(vec3d(5,5,5),vec3d(0,0,1));
     vec3d vLookDir, vTarget;
     
-    vec3d translator = {0, 0, 15};
+    vec3d translator;
     vec3d normal, line1, line2;
     mat4x4 matRotZ, matRotY, matRotX, matWorld, matTrans;
     triangle triProjected, triTranslated, triRotatedZ, triRotatedZX, triViewed;
@@ -47,35 +46,23 @@ private:
     float fFovRad = 1.0f / tanf(fFovDeg * 0.5f / 180.0f * 3.141592f);
     float bias = 0.5f;
 
-    mat4x4 matrixPointAt(vec3d & pos, vec3d & newForward, vec3d & newUp, vec3d & newRight)
+    vec3d Vector_IntersectPlane(vec3d & plane_p, vec3d &plane_n, vec3d &line_start, vec3d &line_end)
     {
-        mat4x4 matrix;
-        matrix.m[0][0] = newRight.x;   matrix.m[0][1] = newRight.y;   matrix.m[0][2] = newRight.z;   matrix.m[0][3] = 0;
-        matrix.m[1][0] = newUp.x;      matrix.m[1][1] = newUp.y;      matrix.m[1][2] = newUp.z;      matrix.m[1][3] = 0;
-        matrix.m[2][0] = newForward.x; matrix.m[2][1] = newForward.y; matrix.m[2][2] = newForward.z; matrix.m[2][3] = 0;
-        matrix.m[3][0] = pos.x;        matrix.m[3][1] = pos.y;        matrix.m[3][2] = pos.z;        matrix.m[3][3] = 1;
-        return matrix;
-    }
-    mat4x4 matrixLookAt(vec3d & pos, vec3d & newForward, vec3d & newUp, vec3d & newRight)
-    {
-        mat4x4 matrix;
-        matrix.m[0][0] = newRight.x;   matrix.m[1][0] = newRight.y;   matrix.m[2][0] = newRight.z;   matrix.m[0][3] = 0;
-        matrix.m[0][1] = newUp.x;      matrix.m[1][1] = newUp.y;      matrix.m[2][1] = newUp.z;      matrix.m[1][3] = 0;
-        matrix.m[0][2] = newForward.x; matrix.m[1][2] = newForward.y; matrix.m[2][2] = newForward.z; matrix.m[2][3] = 0;
-        matrix.m[3][0] = (newRight*pos)*-1; matrix.m[3][1] = (newUp*pos)*-1;    matrix.m[3][2] = (newForward*pos)*-1; matrix.m[3][3] = 1;
-        return matrix;
-    }
-    mat4x4 PointAt(vec3d & pos, vec3d & target, vec3d & up)
-    {
-        vec3d newForward = (target - pos).normal();
-        vec3d newUp = (up - (newForward * up.dot(newForward))).normal();
-        vec3d newRight = newUp.cross(newForward);
-
-        return matrixLookAt(pos, newForward, newUp, newRight);
+        plane_n = plane_n.normal();
+        float plane_d = -plane_n.dot(plane_p);
+        float ad = line_start.dot(plane_n);
+        float bd = line_end.dot(plane_n);
+        float t  = (-plane_d -ad) / (bd - ad);
+        vec3d lineStartToEnd = line_end - line_start;
+        vec3d lineToIntersect = lineStartToEnd * t;
+        return line_start + lineToIntersect;
     }
 
     int Triangle_ClipAgainstPlane(vec3d plane_p, vec3d plane_n, triangle &in_tri, triangle &out_tri1, triangle &out_tri2)
     {
+        vec3d* insidePoints[3];  int nInsidePointCount  = 0;
+        vec3d* outsidePoints[3]; int nOutsidePointCount = 0;
+
         plane_n = plane_n.normal();
 
         auto dist = [&](vec3d &p)
@@ -83,9 +70,6 @@ private:
             vec3d n = p.normal();
             return (plane_n.x * p.x + plane_n.y * p.y + plane_n.z * p.z - plane_n.dot(plane_p));
         };
-
-        vec3d* insidePoints[3];  int nInsidePointCount  = 0;
-        vec3d* outsidePoints[3]; int nOutsidePointCount = 0;
 
         for (int ii = 0; ii < 3; ii++)
         {
@@ -99,42 +83,38 @@ private:
         {
             return 0;
         }
+
         if (nInsidePointCount == 3)
         {
             out_tri1 = in_tri;
-            
             return 1;
         }
+
         if (nInsidePointCount == 1 && nOutsidePointCount == 2)
         {
-            out_tri1.col = in_tri.col;
+            out_tri1.col = vec3d(255,0,0);//in_tri.col;
 
             out_tri1.p[0] = *insidePoints[0];
-            out_tri1.p[1] = Vector_IntersectPlane(plane_p,plane_n,*insidePoints[0],*outsidePoints[0]);
-            out_tri1.p[2] = Vector_IntersectPlane(plane_p,plane_n,*insidePoints[0],*outsidePoints[1]);
+            out_tri1.p[1] = Vector_IntersectPlane(plane_p, plane_n, *insidePoints[0], *outsidePoints[0]);
+            out_tri1.p[2] = Vector_IntersectPlane(plane_p, plane_n, *insidePoints[0], *outsidePoints[1]);
             
             return 1;
         }
         if (nInsidePointCount == 2 && nOutsidePointCount == 1)
         {
-            out_tri1.col = in_tri.col;
-            out_tri2.col = in_tri.col;
+            out_tri1.col = vec3d(0, 255, 0);//in_tri.col;
+            out_tri2.col = vec3d(0, 0, 255);//in_tri.col;
 
             out_tri1.p[0] = *insidePoints[0];
             out_tri1.p[1] = *insidePoints[1];
-            out_tri1.p[2] = Vector_IntersectPlane(plane_p,plane_n,*insidePoints[0],*outsidePoints[0]);
+            out_tri1.p[2] = Vector_IntersectPlane(plane_p, plane_n, *insidePoints[0], *outsidePoints[0]);
 
             out_tri2.p[0] = *insidePoints[1];
             out_tri2.p[1] = out_tri1.p[2];//Vector_IntersectPlane(plane_p,plane_n,*insidePoints[1],*outsidePoints[0]);
-            out_tri2.p[2] = Vector_IntersectPlane(plane_p,plane_n,*insidePoints[1],*outsidePoints[0]);
+            out_tri2.p[2] = Vector_IntersectPlane(plane_p, plane_n, *insidePoints[1], *outsidePoints[0]);
             
             return 2;
         }
-    }
-
-    vector<triangle> bigCube(vector<triangle> world, vec3d Origo, int side_nr)
-    {
-        
     }
 
     vector<triangle> cubeMaker(vector<triangle> world, vec3d dia, vec3d Origo)
@@ -182,25 +162,25 @@ private:
         world.push_back(triangle(   -0.5 * dia.x + Origo.x, -0.5 * dia.y + Origo.y,  0.5 * dia.z + Origo.z, 
                                      0.5 * dia.x + Origo.x, -0.5 * dia.y + Origo.y, -0.5 * dia.z + Origo.z, 
                                      0.5 * dia.x + Origo.x, -0.5 * dia.y + Origo.y,  0.5 * dia.z + Origo.z));
-
         return world;
     }
 
 public:
     bool OnUserCreate() override
     {
-        matProj = matrixMakeProjection(fFovDeg, fAspectRatio, fFar, fNear);
-        Cube G0 = Cube(0,0,2);
-        meshCube.tris = G0.constructCube(meshCube.tris);
+        meshCube.tris = cubeMaker(meshCube.tris, vec3d(1,1,1), vec3d(0,0,0));
         world.push_back(meshCube);
+        translator = {0, 0, 10};
+
+        matProj = matrixMakeProjection(fFovDeg, fAspectRatio, fFar, fNear);
+        
         return true;
     }
 
     bool OnUserUpdate(float fElapsedTime) override
     {
         vec3d vForward = Camera.dir * 8.0f * fElapsedTime;
-        vec3d Ydir = vec3d(0,-1,0);
-        vec3d vLeft = Camera.dir * 8.0f * fElapsedTime * matrixRotationU(&Ydir,3.141592/2.0f);
+        vec3d vLeft = Camera.dir * 8.0f * fElapsedTime * matrixRotationY(3.141592/2.0f);
         fTheta += 1.0f * fElapsedTime;
 
         if (GetKey(olc::Key::DOWN ).bHeld) { Camera.pos.y += 1.0f * fElapsedTime; }
@@ -223,10 +203,10 @@ public:
         matWorld = matrixUnit();
         matWorld = matWorld * matTrans;
 
-        vUp = vec3d(0,1,0);
+        vUp = vec3d(0, 1, 0);
         vTarget = vec3d(0, 0, 1);
-        
-        mat4x4 matCameraRot = matrixRotationU(&Ydir,fYaw);
+
+        mat4x4 matCameraRot = matrixRotationY(fYaw);
         Camera.dir = vTarget * matCameraRot;
         vTarget = Camera.pos + Camera.dir;
 
@@ -235,7 +215,7 @@ public:
         vector<triangle> vecTriToRaster;
 
         for (auto meshCube: world)
-        {            
+        {
             for (auto tri : meshCube.tris)
             {
                 for (int i = 0; i < 3; i++)
@@ -254,20 +234,21 @@ public:
                 if (D < 0.0)
                 {
                     vec3d lightDirection = {0.0f, 0.0f, -1.0f};
-                    
+                    triangle clipped[2];
+                    int nClippedTriangles = 0;
+
                     lightDirection = lightDirection - Camera.pos;
                     lightDirection = lightDirection.normal();
                     //vec3d dp = vec3d(1,1,1)*lightDirection.dot(normal) * 255;
-                    float dp = max(lightDirection.dot(normal),0.1f);
+                    float dp = max(lightDirection.dot(normal), 0.1f);
                     triViewed.col = triTranslated.col * dp;
 
                     for (int i = 0; i < 3; i++)
                     {
                         triViewed.p[i] = triTranslated.p[i] * matView;
                     }
-                    int nClippedTriangles = 0;
-                    triangle clipped[2];
-                    nClippedTriangles = Triangle_ClipAgainstPlane(vec3d(0.0f,0.0f,0.1f),vec3d(0,0,1),triViewed,clipped[0],clipped[1]);
+                    
+                    nClippedTriangles = Triangle_ClipAgainstPlane(vec3d(0.0f, 0.0f, 0.1f), vec3d(0, 0, 1), triViewed, clipped[0], clipped[1]);
 
                     for (int nn = 0; nn < nClippedTriangles; nn++)
                     {  
@@ -280,6 +261,7 @@ public:
                                 triProjected.p[i] = triProjected.p[i] / triProjected.p[i].w;
                             }
                             triProjected.p[i] = triProjected.p[i] + vec3d(1.0f, 1.0f, 0.0f);
+                            //triProjected.col = dp;
 
                             triProjected.p[i].x *= 0.5f * (float)ScreenWidth();
                             triProjected.p[i].y *= 0.5f * (float)ScreenHeight();
@@ -290,7 +272,7 @@ public:
             }
         }
 
-        sort(vecTriToRaster.begin(), vecTriToRaster.end(), [](triangle &t1,triangle &t2)
+        sort(vecTriToRaster.begin(), vecTriToRaster.end(), [](triangle &t1, triangle &t2)
         {
             float z1 = (t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f;
             float z2 = (t2.p[0].z + t2.p[1].z + t2.p[2].z) / 3.0f;
@@ -302,7 +284,6 @@ public:
         
         float SH = (float)ScreenHeight();
         float SW = (float)ScreenWidth();
-        
         for (auto triToRaster : vecTriToRaster)
         {
             triangle clipped[2];
@@ -337,17 +318,16 @@ public:
             for (auto &triToDraw : listTriangles)
             {
                 FillTriangle(triToDraw.p[0].x, triToDraw.p[0].y,
-                            triToDraw.p[1].x, triToDraw.p[1].y,
-                            triToDraw.p[2].x, triToDraw.p[2].y, {triToDraw.col.x,triToDraw.col.y,triToDraw.col.z});
-                //DrawTriangle(triToDraw.p[0].x, triToDraw.p[0].y,
-                //            triToDraw.p[1].x, triToDraw.p[1].y,
-                //            triToDraw.p[2].x, triToDraw.p[2].y, {0, 0, 0});
+                             triToDraw.p[1].x, triToDraw.p[1].y,
+                             triToDraw.p[2].x, triToDraw.p[2].y, {triToDraw.col.x, triToDraw.col.y, triToDraw.col.z});
+                DrawTriangle(triToDraw.p[0].x, triToDraw.p[0].y,
+                             triToDraw.p[1].x, triToDraw.p[1].y,
+                             triToDraw.p[2].x, triToDraw.p[2].y, {0, 0, 0});
             }
         }
         return true;
     }
 };
-
 
 int main()
 {

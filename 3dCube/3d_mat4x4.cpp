@@ -27,7 +27,7 @@ mat4x4 mat4x4::operator * (const mat4x4 &rhs)
     }
     return out;
 }
-
+/*
 mat4x4 matrixUnit()
 {
     mat4x4 matRot;
@@ -69,7 +69,7 @@ mat4x4 matrixRotationZ(float fTheta)
     matRot.m[2][2] = 1;
     matRot.m[3][3] = 1;
     return matRot;
-}
+}*/
 mat4x4 matrixRotationU(vec3d *U, float fTheta)
 {
     mat4x4 matRot;
@@ -93,7 +93,7 @@ mat4x4 matrixRotationU(vec3d *U, float fTheta)
     
     matRot.m[3][3] = 1;
     return matRot;
-}
+}/*
 mat4x4 matrixMakeProjection(float fFovDeg, float fAspectRatio, float fFar, float fNear)
 {
     mat4x4 matProj;
@@ -106,7 +106,7 @@ mat4x4 matrixMakeProjection(float fFovDeg, float fAspectRatio, float fFar, float
     matProj.m[2][3] = 1.0f;
     matProj.m[3][3] = 0.0f;
     return matProj;
-}
+}*/
 mat4x4 matrixTranslation(vec3d *t)
 {
     mat4x4 matTrans;
@@ -118,9 +118,9 @@ mat4x4 matrixTranslation(vec3d *t)
     matTrans.m[3][1] = t->y;
     matTrans.m[3][2] = t->z;
     return matTrans;
-}
+}/*
 mat4x4 matrixTranslation(float x, float y, float z)
 {
     vec3d temp = vec3d(x,y,z);
     return matrixTranslation(&temp);
-}
+}*/

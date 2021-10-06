@@ -1,9 +1,12 @@
 #ifndef MAT4X4_3D
 #define MAT4X4_3D
 #include <strstream>
+#include <cmath>
+
 #include "3d_vec3d.hpp"
 struct vec3d;
 
+struct vec3d;
 struct mat4x4
 {
     float m[4][4] = {0};
