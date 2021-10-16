@@ -1,45 +1,13 @@
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 #include "point2d.hpp"
+#include "besiercurve.hpp"
 #include <cmath>
 // Override base class with your custom functionality
 
 
 
-struct besierControll
-{
-	int nDefined = 0;
-	int nMax = 4;
-	point2d P[4];
-	int nPressed = 100;
 
-	bool mouseCheck(int32_t mouseX, int32_t mouseY, bool mHeld, bool mPressed)
-	{
-		float this_dist, dist = 10000;
-		if (this->nDefined < this->nMax){
-			if (mPressed){
-				P[this->nDefined] = point2d(mouseX, mouseY);
-				this->nDefined++;
-			}
-		} else {
-			if (nPressed > nMax) {
-				for (int n = 0; n < this->nDefined; n++){
-					this_dist = P[n].dist(point2d(mouseX, mouseY));
-					if (this_dist < dist && this_dist < 10) {
-						dist = this_dist;
-						nPressed = n;
-					}
-				}
-			}
-		}
-		if (mHeld && nPressed <= nMax) {
-			P[nPressed] = point2d(mouseX, mouseY);
-		} else {
-			nPressed = 100;
-		}
-		return true;
-	};
-};
 
 class Example : public olc::PixelGameEngine
 {
