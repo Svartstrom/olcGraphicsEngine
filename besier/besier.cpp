@@ -1,19 +1,10 @@
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
+#include "point2d.hpp"
 #include <cmath>
 // Override base class with your custom functionality
 
-struct point2d
-{
-	int32_t x, y;
-	point2d() : x(0), y(0) {}
-	point2d(int32_t _x, int32_t _y) : x(_x), y(_y) {}
 
-	float dist(const point2d &rhs)
-	{	
-		return sqrtf(pow(rhs.x - this->x, 2) + pow(rhs.y - this->y, 2));
-	}
-};
 
 struct besierControll
 {
@@ -26,10 +17,10 @@ struct besierControll
 	{
 		float this_dist, dist = 10000;
 		if (this->nDefined < this->nMax){
-			if (mPressed){ 
+			if (mPressed){
 				P[this->nDefined] = point2d(mouseX, mouseY);
 				this->nDefined++;
-			} 
+			}
 		} else {
 			if (nPressed > nMax) {
 				for (int n = 0; n < this->nDefined; n++){
