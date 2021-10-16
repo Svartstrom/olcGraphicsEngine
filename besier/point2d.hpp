@@ -1,3 +1,6 @@
+#ifndef POINT2D_HPP
+#define POINT2D_HPP
+
 #include <cstdint>
 #include <cmath>
 struct point2d
@@ -8,3 +11,4 @@ struct point2d
 
   float dist(const point2d &rhs);
 };
+#endif

@@ -1,3 +1,6 @@
+#ifndef BESIERCURVE_HPP
+#define BESIERCURVE_HPP
+
 #include "point2d.hpp"
 #include <cstdint>
 //#include <cmath>
@@ -10,3 +13,4 @@ struct besierControll
 
 	bool mouseCheck(int32_t mouseX, int32_t mouseY, bool mHeld, bool mPressed);
 };
+#endif

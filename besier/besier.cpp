@@ -1,44 +1,7 @@
-#define OLC_PGE_APPLICATION
-#include "olcPixelGameEngine.h"
-#include "point2d.hpp"
-#include "besiercurve.hpp"
-#include <cmath>
-// Override base class with your custom functionality
 
 
+#include "besier.hpp"
 
-
-
-class Example : public olc::PixelGameEngine
-{
-public:
-	Example()
-	{
-		sAppName = "Example";
-	}
-public:
-	int32_t mouseX, mouseY;
-	int32_t delimX, delimY;
-	bool mHeld, mPressed;
-	besierControll B;
-
-	void drawer(void);
-	point2d calculateBesier(float t);
-	void drawBesier(void);
-	point2d lerp(point2d P1, point2d P2, float t);
-
-	bool OnUserCreate() override
-	{
-		// Called once at the start, so create things here
-
-		return true;
-	}
-	bool OnUserUpdate(float fElapsedTime) override
-	{
-		drawer();
-		return true;
-	}
-};
 int main()
 {
 	Example demo;
@@ -46,11 +9,25 @@ int main()
 		demo.Start();
 	return 0;
 }
+
+bool Example::OnUserCreate()
+{
+	// Called once at the start, so create things here
+
+	return true;
+}
+bool Example::OnUserUpdate(float fElapsedTime)
+{
+	drawer();
+	return true;
+}
+
 point2d Example::lerp(point2d P0, point2d P1, float t) {
 	float t_x = (1-t)*P0.x + t*P1.x;
 	float t_y = (1-t)*P0.y + t*P1.y;
 	return point2d(t_x, t_y);
 }
+
 point2d Example::calculateBesier(float t){
 	point2d t_A = lerp(B.P[0], B.P[1], t);
 	point2d t_B = lerp(B.P[1], B.P[2], t);

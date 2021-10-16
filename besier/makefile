@@ -11,3 +11,7 @@ main: $(MAIN_OFILES)
 besies.o: besier.cpp
 point2d.o: point2d.cpp
 besiercurve.o: besiercurve.cpp point2d.cpp
+
+.PHONY : clean
+clean :
+			 -rm *.o $(objects)
